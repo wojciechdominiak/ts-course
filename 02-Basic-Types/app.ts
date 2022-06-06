@@ -1,14 +1,16 @@
 let userInput: unknown;
-let userName: string;
 
 userInput = 5;
 userInput = "Wojtek";
+
+let userName: string;
+
 if (typeof userInput === "string") {
   userName = userInput;
 }
 
-function generateError(message: string, code: number): never {
-  throw { message: message, errorCode: code };
+function genereateError(message: string, code: number) {
+  throw message + code;
 }
 
-generateError("Error!", 500);
+genereateError("Sth went wrong!", 599);

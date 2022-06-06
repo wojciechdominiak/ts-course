@@ -5,39 +5,38 @@ let age = 30;
 age = 29;
 var result;
 
-const add = (a: number, b: number = 4) => {
-  return a + b;
+const add = (n1: number, n2: number = 1) => {
+  return n1 + n2;
 };
-console.log(add(3));
 
-const button = document.querySelector("button")!;
+console.log(add(2));
+
+const button = document.querySelector("button")! as HTMLButtonElement;
 
 button.addEventListener("click", (event) => {
   console.log(event);
 });
 
-const hobbies = ["sports", "cooking"];
-const activeHobbies = ["hiking", ...hobbies];
+const hobbies = ["cooking", "runing"];
+const activities = ["reading"];
 
-activeHobbies.push(...hobbies);
+activities.push(...hobbies);
+
+console.log(activities);
 
 const person = {
-  firstName: "wojtek",
-  agee: 30,
+  name: "Wojciech",
+  age: 30,
 };
-const person2 = { ...person };
 
-console.log(person2.firstName);
+const copyOfPerson = { ...person };
 
-const addd = (...args: number[]) => {
-  return args.reduce((curRes, curVal) => {
+console.log(copyOfPerson);
+
+const add2 = (...nums: number[]) => {
+  return nums.reduce((curRes, curVal) => {
     return curRes + curVal;
   }, 0);
 };
-const added = addd(5, 10, 20, 23, 12);
-console.log(added);
 
-const [hobby1, hobby2, ...remainingHobbies] = hobbies;
-console.log(hobby1, hobby2, hobbies);
-
-const {firstName, agee} = person;
+console.log(add2(5,3,4,3,2,1));

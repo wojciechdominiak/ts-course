@@ -1,118 +1,107 @@
 abstract class Department {
-  static fiscalYear = 2022;
-  protected employees: string[] = [];
+  private employees: string[] = [];
 
-  constructor(protected readonly id: string, protected name: string) {
-    this.id = id;
-    this.name = name;
-  }
+  static fiscalYear = 2002;
 
-  abstract describe(this: Department): void;
-
-  addEmployee(eployee: string) {
-    this.employees.push(eployee);
-  }
-
-  printEmployee() {
-    console.log(this.employees.length);
-    console.log(this.employees);
-  }
+  constructor(protected readonly id: string, public name: string) {}
 
   static createEmployee(name: string) {
     return { name: name };
   }
+
+  abstract describe(): void;
+
+  addEmployee(employe: string) {
+    this.employees.push(employe);
+  }
+
+  infoEmployee() {
+    console.log(this.employees.length);
+    console.log(this.employees);
+  }
 }
 
+enum Family {
+  Zulka,
+  Wojtek,
+  Julka,
+}
+
+let tuple: [string, string, string];
+tuple = ["Wojtek", "Zulka", "Julka"];
+
+console.log(Department.fiscalYear);
+console.log(Department.createEmployee("Wojtek"));
+
 class ITDepartment extends Department {
-  private lastReport: string;
-
-  constructor(id: string, private reports: string[]) {
+  constructor(id: string, public admins: string[]) {
     super(id, "IT");
-    this.lastReport = reports[0];
-  }
-
-  get getLastReport() {
-    if (this.lastReport) {
-      return this.lastReport;
-    } else {
-      throw new Error("No report found.");
-    }
-  }
-
-  set setLastReport(value: string) {
-    if (!value) {
-      throw new Error("Please pass in a valid value");
-    } else {
-      this.addReport(value);
-    }
   }
 
   describe() {
-    console.log("IT id: " + this.id + this.name);
+    console.log(`IT department (${this.id}): ${this.name}`);
   }
 
-  addEmployee(name: string) {
-    if (name === "Max") {
-      return;
-    }
-    this.employees.push(name);
+  addAdmin(admin: string) {
+    this.admins.push(admin);
   }
 
-  addReport(text: string) {
-    this.reports.push(text);
-    this.lastReport = text;
+  infoAdmin() {
+    console.log(this.admins.length);
+    console.log(this.admins);
   }
 }
 
-class Accounting extends Department {
-  private static instance: Accounting;
-  private constructor(id: string) {
-    super(id, "acc");
+const it = new ITDepartment("d2", ["Wojtek", "Julia"]);
+it.describe();
+
+it.addAdmin("Zulka");
+it.infoAdmin();
+
+class AccountingDepartment extends Department {
+  private static instance: AccountingDepartment;
+  private lastRaport: string;
+  public raports: string[] = [];
+  private constructor(id: string, public admins: string[]) {
+    super(id, "Accouting");
+    this.lastRaport = this.raports[0];
   }
 
   static getInstance() {
-    if (this.instance) {
+    if (AccountingDepartment.instance) {
       return this.instance;
     }
-    this.instance = new Accounting("d2");
+    this.instance = new AccountingDepartment("d1", ["Wojtek", "Julia"]);
     return this.instance;
-  }
-  addEmployee(name: string) {
-    if (name === "Wojtek") {
-      return;
-    }
-    this.employees.push(name);
   }
 
   describe() {
-    console.log("Acc Department: ID:" + this.id);
+    console.log(`Accounting department (${this.id}): ${this.name}`);
+  }
+
+  get latestRaport() {
+    if (this.lastRaport) {
+      return this.lastRaport;
+    } else {
+      throw Error("0 raports");
+    }
+  }
+
+  addRaport(raport: string) {
+    this.raports.push(raport);
+    this.lastRaport = raport;
   }
 }
 
-//static
-const employe1 = Department.createEmployee("Wojtek2");
-console.log(employe1, Department.fiscalYear);
+const accounting = AccountingDepartment.getInstance();
 
-const IT = new ITDepartment("d1", []);
-IT.setLastReport = "Error";
+accounting.describe();
 
-console.log(IT.getLastReport);
+accounting.addEmployee("Wojtek");
+accounting.addEmployee("Julia");
 
-IT.addReport("somethingwentwrong");
+accounting.infoEmployee();
 
-IT.describe();
-console.log(IT);
+accounting.addRaport("Sth went wrong -500m");
 
-IT.addEmployee("Max");
-IT.addEmployee("Wojtek");
-
-IT.printEmployee();
-
-//const acc = new Accounting("d2");
-const acc = Accounting.getInstance();
-
-acc.addEmployee("Max");
-acc.addEmployee("Wojtek");
-
-acc.printEmployee();
-acc.describe();
+console.log(accounting.latestRaport);
