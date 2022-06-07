@@ -1,6 +1,8 @@
+//Intersection Types
+
 type Admin = {
   name: string;
-  privileges: string[];
+  priveleges: string[];
 };
 
 type Employee = {
@@ -12,80 +14,71 @@ type ElevatedEmployee = Admin & Employee;
 
 const e1: ElevatedEmployee = {
   name: "Wojtek",
-  privileges: ["create-server"],
+  priveleges: ["Common"],
   startDate: new Date(),
 };
 
-type Combinable = string | number;
-type Numeric = number | boolean;
+console.log(e1);
 
-type Universal = Combinable & Numeric;
+type Combinable = number | boolean;
+type Numeric = number | string;
 
-function add(a: number, b: number): number;
-function add(a: string, b: string): string;
-function add(a: Combinable, b: Combinable) {
-  if (typeof a === "string" || typeof b === "string") {
-    return a.toString() + b.toString();
+type Universal = Combinable & Numeric; //number
+
+//Type guards typeof
+//Overload
+function add(n1: string, n2: string): string;
+function add(n1: number, n2: number): number;
+function add(n1: Numeric, n2: Numeric) {
+  if (typeof n1 === "string" || typeof n2 === "string") {
+    return n1.toString() + n2.toString();
   }
-  return a + b;
+  return n1 + n2;
 }
 
-const result = add("max", "wojtek");
-result.split(" ");
+const result = add(1, 5);
 
-const fetchedUserData = {
-  id: "u1",
-  name: "max",
-  job: { title: "Ceo", description: "boss" },
-};
+//in
 
-console.log(fetchedUserData?.job?.title);
-
-const userInput = "";
-const storedData = userInput ?? "DEFAULT";
-console.log(storedData);
-
-type UnknownEmployee = Employee | Admin;
-
-function printEmployeeInformation(emp: UnknownEmployee) {
+function printEmployee(emp: ElevatedEmployee) {
   console.log("Name: " + emp.name);
-  if ("privileges" in emp) {
-    console.log("Privileges: " + emp.privileges);
+  if ("priveleges" in emp) {
+    console.log("Priveleges: " + emp.priveleges);
   }
   if ("startDate" in emp) {
-    console.log("Sart Date: " + emp.startDate);
+    console.log("Start Date: " + emp.startDate);
   }
 }
 
-printEmployeeInformation(e1);
+//instancof
 
 class Car {
   drive() {
-    console.log("Driving");
+    console.log("Drive..");
   }
 }
-class Truck {
-  drive() {
-    console.log("Driving a truck");
-  }
+
+class Truck extends Car {
   loadCargo(amount: number) {
-    console.log("Loading cargo... " + amount);
+    console.log("Load cargo: " + amount);
   }
 }
 
 type Vehicle = Car | Truck;
 
-const v1 = new Car();
-const v2 = new Truck();
+const car = new Car();
+const truck = new Truck();
 
 function useVehicle(vehicle: Vehicle) {
   vehicle.drive();
   if (vehicle instanceof Truck) {
-    vehicle.loadCargo(55);
+    vehicle.loadCargo(3);
   }
 }
-useVehicle(v1);
-useVehicle(v2);
+useVehicle(truck);
+useVehicle(car);
+
+//Discriminated Unions
 
 interface Bird {
   type: "bird";
@@ -94,40 +87,56 @@ interface Bird {
 
 interface Horse {
   type: "horse";
-  runSpeed: number;
+  runningSpeed: number;
 }
 
 type Animal = Bird | Horse;
 
 function moveAnimal(animal: Animal) {
-  let speed;
+  let speed: number;
   switch (animal.type) {
     case "bird":
       speed = animal.flyingSpeed;
       break;
     case "horse":
-      speed = animal.runSpeed;
+      speed = animal.runningSpeed;
   }
   console.log("Moving at speed: " + speed);
 }
 
-moveAnimal({ type: "bird", flyingSpeed: 10 });
+moveAnimal({ type: "bird", flyingSpeed: 50 });
 
-/* const userInputElement = <HTMLInputElement>(
-  document.getElementById("user-input")!
-); */
+//type Casting
 
-const userInputElement = document.getElementById(
-  "user-input"
-)! as HTMLInputElement;
+const input = document.getElementById("user-input")! as HTMLInputElement;
 
-userInputElement.value = "Hi there!";
+input.value = "Hi there!";
 
 interface ErrorContainer {
-  [prop: string]: string;
+  [props: string]: string;
 }
 
+//Index Properties
 const errorBag: ErrorContainer = {
-  email: "Not a valid email",
-  username: "Must start with a cpaital character",
+  email: "Not a valid email!",
+  name: "Not a valid name!",
 };
+
+//Optional chaining
+const fetchedData = {
+  name: "Wojtek",
+  age: 30,
+  job: {
+    title: "Designer",
+    sallary: 40000,
+  },
+};
+
+console.log(fetchedData?.job?.title);
+
+//Nulish Coalescing
+
+const userInput = "";
+const storedData = userInput ?? "DEFAULT";
+
+console.log(storedData);
