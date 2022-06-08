@@ -1,111 +1,24 @@
-//generic function
-
-/* const names: Array<string> = [];
+//What are generics
+const names: Array<string> = [];
+names[0].split(" "); //we can use split method thans gengeric type
 
 const promise: Promise<string> = new Promise((resolve) => {
   setTimeout(() => {
-    resolve("This is done!");
+    resolve("Hi there");
   }, 2000);
 });
 
-promise.then(data => {
-    data.split(' ');
-    console.log(data);
-})
- */
+promise.then((data) => {
+  console.log(data.split("")); //like upper
+});
 
-/* async function getData(){
-    const promise: Promise<string> = new Promise((resolve) => {
-        setTimeout(() => {
-          resolve("This is done!");
-        }, 2000);
-      });
-      (document.getElementById("demo") as HTMLInputElement).value = await promise;
+//Creating a generic types
+function merge<T, U>(ObjA: T, ObjB: U) {
+  return Object.assign(ObjA, ObjB);
 }
 
-getData(); */
-
-function merge<T extends object, U extends object>(objA: T, objB: U) {
-  return Object.assign(objA, objB);
-}
-
-const mergedObj = merge({ name: "Max", hobbies: ["Sports"] }, { age: 30 });
-console.log(mergedObj.name);
-
-interface Lengthy {
-  length: number;
-}
-
-function countAndPrint<T extends Lengthy>(element: T): [T, string] {
-  let descriptionText = "Got no value";
-  if (element.length === 1) {
-    descriptionText = "Got 1 element.";
-  } else if (element.length > 1) {
-    descriptionText = `Got ${element.length} elements.`;
-  }
-  return [element, descriptionText];
-}
-
-console.log(countAndPrint(["sport", "cookie"]));
-
-function exractAndConvert<T extends object, U extends keyof T>(obj: T, key: U) {
-  return `Value + ${obj[key]}`;
-}
-
-console.log(exractAndConvert({ name: "Wojtek" }, "name"));
-
-//generic classes
-
-class DataStorage<T extends string | number | boolean | bigint | symbol> {
-  private data: T[] = [];
-
-  addItem(item: T) {
-    this.data.push(item);
-  }
-
-  removeItem(item: T) {
-    if (this.data.indexOf(item) === -1) {
-      return;
-    }
-    this.data.splice(this.data.indexOf(item), 1);
-  }
-
-  getItems() {
-    return [...this.data];
-  }
-}
-
-const textStorage = new DataStorage<string>();
-
-textStorage.addItem("Wojtek");
-textStorage.addItem("Max");
-textStorage.removeItem("Max");
-console.log(textStorage.getItems());
-
-/* const objStorage = new DataStorage<object>();
-const maxObj = { name: "Max" };
-objStorage.addItem({ name: "Wojtek" });
-objStorage.addItem(maxObj);
-objStorage.removeItem(maxObj);
-console.log(objStorage.getItems()); */
-
-interface CourseGoal {
-  title: string;
-  description: string;
-  completeUntil: Date;
-}
-
-function createCourseGoal(
-  title: string,
-  description: string,
-  date: Date
-): CourseGoal {
-  let courseGoal: Partial<CourseGoal> = {};
-  courseGoal.title = title;
-  courseGoal.description = description;
-  courseGoal.completeUntil = date;
-  return courseGoal as CourseGoal;
-}
-
-const names: Readonly<string[]> = ["Wojtek", "Wojt"];
-//names.push("Manu"); error!
+const mergedObj = merge({ name: "Wojtek" }, { age: 30 });
+const mergedObj2 = merge({ name: "Wojtek", hobbies: ["Sport"] }, { age: 30 });
+console.log(mergedObj2.hobbies);
+console.log(mergedObj.age);
+// tell TS that T and U are different type of object not only object
