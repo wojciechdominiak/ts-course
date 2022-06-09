@@ -1,191 +1,80 @@
+//A first class decorator - just function applying to class
+//Decorator runs when JS finds your class definition
+/* function Logger(constructor: Function) {
+  console.log("Logging...");
+  console.log(constructor);
+}
+
+@Logger
+class Person {
+  name: string;
+  constructor(name: string) {
+    this.name = name;
+    console.log("Creating person...");
+  }
+}
+ */
+
+//Decorator Factories - we can configure decorators e.g. add customizable string
 function Logger(logString: string) {
-  console.log("LOGGER FACTORY");
+  console.log("LOGGER-FACTORY");
   return function (constructor: Function) {
     console.log(logString);
     console.log(constructor);
   };
 }
-
-function WithTemplate(template: string, hookId: string) {
-  console.log("TEMPLATE FACTORY");
-  return function <T extends { new (...args: any[]): { name: string } }>(
-    originialConstructor: T
-  ) {
-    return class extends originialConstructor {
-      constructor(..._: any[]) {
-        super();
-        console.log("Rendering template");
-        const hookEl = document.getElementById(hookId);
-        if (hookEl) {
-          hookEl.innerHTML = template;
-          hookEl.querySelector("h1")!.textContent = this.name;
-        }
-      }
-    };
-  };
-}
-
+//First withtemplate run
+//Firt faktory is logger otherwise
 @Logger("LOGGING - PERSON")
-@WithTemplate("<h1>My Person Object</h1>", "app")
+@WithTemplate("<h1>Hello World</h1> <h2></h2>", "app")
 class Person {
-  name = " Max";
-
-  constructor() {
-    console.log("Creating person object...");
+  name: string;
+  constructor(name: string) {
+    this.name = name;
+    console.log("Creating person...");
   }
 }
 
+//More useful decorator
+function WithTemplate(template: string, hookId: string) {
+  console.log("TEMPLATE-FACTORY");
+  return function (constructor: any) {
+    console.log("Rendering template");
+    const hookEl = document.getElementById(hookId)! as HTMLDivElement;
+    hookEl.innerHTML = template;
+    const newPerson = new constructor("Wojtek");
+    hookEl.querySelector("h2")!.textContent = newPerson.name;
+  };
+}
+
+//Diving into property decorator
+//Not decorator factory, but decorator function
+//Execution on class definition
+
 function Log(target: any, propertyName: string | Symbol) {
-  console.log("Propert decoretor!");
+  console.log("Property decorator!");
   console.log(target, propertyName);
-}
-
-function Log2(target: any, name: string, descriptor: PropertyDescriptor) {
-  console.log("Accessor decoretor!");
-  console.log(target);
-  console.log(name);
-  console.log(descriptor);
-}
-
-function Log3(
-  target: any,
-  name: string | Symbol,
-  descriptor: PropertyDescriptor
-) {
-  console.log(target);
-  console.log(name);
-  console.log(descriptor);
-}
-
-function Log4(target: any, name: string | Symbol, position: number) {
-  console.log(target);
-  console.log(name);
-  console.log(position);
 }
 
 class Product {
   @Log
   title: string;
   private _price: number;
-  @Log2
+
   set price(val: number) {
     if (val > 0) {
       this._price = val;
     } else {
-      throw new Error("Invalid price - should be positive!");
+      throw new Error("Invalid Price");
     }
   }
 
-  constructor(t: string, p: number) {
-    this.title = t;
-    this._price = p;
+  constructor(title: string, price: number) {
+    this.title = title;
+    this._price = price;
   }
-  @Log3
-  getPriceWithTax(@Log4 tax: number) {
+
+  getPriceWithTax(tax: number) {
     return this._price * (1 + tax);
   }
 }
-
-function Autobind(_: any, _2: string, descriptor: PropertyDescriptor) {
-  const originalMethod = descriptor.value;
-  const adjDescriptor: PropertyDescriptor = {
-    configurable: true,
-    enumerable: false,
-    get() {
-      const boundFn = originalMethod.bind(this);
-      return boundFn;
-    },
-  };
-  return adjDescriptor;
-}
-
-class Printer {
-  message = "This works!";
-
-  @Autobind
-  showMessage() {
-    console.log(this.message);
-  }
-}
-const p = new Printer();
-const button = document.querySelector("button")!;
-button.addEventListener("click", p.showMessage); //bind(p)
-
-interface ValidatorConfig {
-  [property: string]: {
-    [validatableProps: string]: string[]; //required, positive
-  };
-}
-
-const registeredValidators: ValidatorConfig = {};
-
-function Required(target: any, propName: string) {
-  registeredValidators[target.constructor.name] = {
-    ...registeredValidators[target.constructor.name],
-    [propName]: [
-      ...(registeredValidators[target.constructor.name]?.[propName] ?? []),
-      "required",
-    ],
-  };
-}
-
-function PositiveNumber(target: any, propName: string) {
-  registeredValidators[target.constructor.name] = {
-    ...registeredValidators[target.constructor.name],
-    [propName]: [
-      ...(registeredValidators[target.constructor.name]?.[propName] ?? []),
-      "positive",
-    ],
-  };
-}
-
-function validate(obj: any) {
-  const objValidatorConfig = registeredValidators[obj.constructor.name];
-  if (!objValidatorConfig) {
-    return true;
-  }
-  let isValid = true;
-  for (const prop in objValidatorConfig) {
-    for (const validator of objValidatorConfig[prop]) {
-      switch (validator) {
-        case "required":
-          isValid = isValid && !!obj[prop];
-          break;
-        case "positive":
-          isValid = isValid && obj[prop] > 0;
-          break;
-      }
-    }
-  }
-  return isValid;
-}
-
-class Course {
-  @Required
-  title: string;
-  @PositiveNumber
-  price: number;
-
-  constructor(t: string, p: number) {
-    this.price = p;
-    this.title = t;
-  }
-}
-
-const courseForm = document.querySelector("form")!;
-courseForm.addEventListener("submit", (event) => {
-  event.preventDefault();
-  const titleEl = document.getElementById("title") as HTMLInputElement;
-  const priceEl = document.getElementById("price") as HTMLInputElement;
-
-  const title = titleEl.value;
-  const price = +priceEl.value;
-
-  const createdCourse = new Course(title, price);
-
-  if (!validate(createdCourse)) {
-    alert("Invalid input!");
-    return;
-  }
-  console.log(createdCourse);
-});
