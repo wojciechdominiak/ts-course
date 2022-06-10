@@ -1,80 +1,83 @@
-//A first class decorator - just function applying to class
-//Decorator runs when JS finds your class definition
-/* function Logger(constructor: Function) {
-  console.log("Logging...");
-  console.log(constructor);
-}
+//Validation by decorator
+const courseForm = document.querySelector("form")!;
 
-@Logger
-class Person {
-  name: string;
-  constructor(name: string) {
-    this.name = name;
-    console.log("Creating person...");
-  }
-}
- */
+//decorator
 
-//Decorator Factories - we can configure decorators e.g. add customizable string
-function Logger(logString: string) {
-  console.log("LOGGER-FACTORY");
-  return function (constructor: Function) {
-    console.log(logString);
-    console.log(constructor);
-  };
-}
-//First withtemplate run
-//Firt faktory is logger otherwise
-@Logger("LOGGING - PERSON")
-@WithTemplate("<h1>Hello World</h1> <h2></h2>", "app")
-class Person {
-  name: string;
-  constructor(name: string) {
-    this.name = name;
-    console.log("Creating person...");
-  }
-}
-
-//More useful decorator
-function WithTemplate(template: string, hookId: string) {
-  console.log("TEMPLATE-FACTORY");
-  return function (constructor: any) {
-    console.log("Rendering template");
-    const hookEl = document.getElementById(hookId)! as HTMLDivElement;
-    hookEl.innerHTML = template;
-    const newPerson = new constructor("Wojtek");
-    hookEl.querySelector("h2")!.textContent = newPerson.name;
+interface ValidatorConfig {
+  //object name
+  [property: string]: {
+    [validatableProp: string]: string[]; ///required, positive etc.
   };
 }
 
-//Diving into property decorator
-//Not decorator factory, but decorator function
-//Execution on class definition
+const registeredValidators: ValidatorConfig = {};
 
-function Log(target: any, propertyName: string | Symbol) {
-  console.log("Property decorator!");
-  console.log(target, propertyName);
+function Required(target: any, propName: string) {
+  registeredValidators[target.constructor.name] = {
+    ...registeredValidators[target.constructor.name],
+    [propName]: [
+      ...(registeredValidators[target.constructor.name]?.[propName] ?? []),
+      "required",
+    ],
+  };
 }
 
-class Product {
-  @Log
-  title: string;
-  private _price: number;
+function PositiveNumber(target: any, propName: string) {
+  registeredValidators[target.constructor.name] = {
+    ...registeredValidators[target.constructor.name],
+    [propName]: [
+      ...(registeredValidators[target.constructor.name]?.[propName] ?? []),
+      "positive",
+    ],
+  };
+}
 
-  set price(val: number) {
-    if (val > 0) {
-      this._price = val;
-    } else {
-      throw new Error("Invalid Price");
+function validate(obj: any) {
+  const objValidatorConfig = registeredValidators[obj.constructor.name];
+  if (!objValidatorConfig) {
+    return true;
+  }
+  let isValid = true;
+  for (const prop in objValidatorConfig) {
+    for (const validator of objValidatorConfig[prop]) {
+      switch (validator) {
+        case "required":
+          isValid = isValid && !!obj[prop];
+          break;
+        case "positive":
+          isValid = isValid && obj[prop] > 0;
+          break;
+      }
     }
   }
+  return isValid;
+}
+
+class Course {
+  @Required
+  title: string;
+  @PositiveNumber
+  price: number;
 
   constructor(title: string, price: number) {
     this.title = title;
-    this._price = price;
-  }
-
-  getPriceWithTax(tax: number) {
-    return this._price * (1 + tax);
+    this.price = price;
   }
 }
+
+courseForm.addEventListener("submit", (event) => {
+  event.preventDefault();
+  const titleEl = document.getElementById("title") as HTMLInputElement;
+  const priceEl = document.getElementById("price") as HTMLInputElement;
+
+  const title = titleEl.value;
+  const price = +priceEl.value;
+
+  const createdCourse = new Course(title, price);
+  console.log(createdCourse);
+
+  if (!validate(createdCourse)) {
+    alert("Invalid input!");
+    return;
+  }
+});
